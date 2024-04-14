@@ -1,0 +1,60 @@
+configurations:
+- plane:    #
+    xDim    : 3840  # pixels
+    yDim    : 2160  # pixels
+    distance: 0.3   # meters
+    fov     : 90    # degrees
+  lightSource:
+    ringLights:
+    - led:
+        model            : Test Model Semi-realistic Curve  # model name of LED
+        intensity        : 0.03 # W/sr
+        radiationProfile :  # relative, in range 0->1
+        - 1
+        - 0.97
+        - 0.9
+        - 0.7
+        - 0.5
+        - 0.4
+        - 0.3
+        - 0.2
+        - 0.12
+        - 0.08
+        - 0.05
+        - 0.03
+        - 0.02
+        - 0.01
+        - 0
+        - 0
+        - 0
+        - 0
+        - 0
+      radius      : 0.05    # meters
+      tilt        : 20      # degrees
+      numberOfLeds: 10
+    - led:
+        model            : Test Model Semi-realistic Curve
+        intensity        : 0.03
+        radiationProfile :
+        - 1
+        - 0.97
+        - 0.9
+        - 0.7
+        - 0.5
+        - 0.4
+        - 0.3
+        - 0.2
+        - 0.12
+        - 0.08
+        - 0.05
+        - 0.03
+        - 0.02
+        - 0.01
+        - 0
+        - 0
+        - 0
+        - 0
+        - 0
+      radius      : 0.058
+      tilt        : 40
+      numberOfLeds: 5
