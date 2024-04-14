@@ -98,8 +98,8 @@ class Plane
             bmp.SetPixel(x, y, color);
         }
 
-        string path = "C:\\Users\\Martin\\Desktop\\docs\\DIPLOMKA\\SIM RESULTS";
-        string fileName = path + "\\" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".bmp";
+        // string path = "C:\\Users\\Martin\\Desktop\\docs\\DIPLOMKA\\SIM RESULTS";
+        string fileName = /*path + "\\" + */ DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".bmp";
 
         bmp.Save(fileName, System.Drawing.Imaging.ImageFormat.Bmp);
     }

@@ -7,9 +7,10 @@ configurations:
   lightSource:
     ringLights:
     - led:
-        model            : Test Model Semi-realistic Curve  # model name of LED
+        model            : Test Model Semi-realistic Curve  # model name of LED, appears in log
         intensity        : 0.03 # W/sr
-        radiationProfile :  # relative, in range 0->1
+        # must contain 19 values, ranging from 0° to 90° (5° step), inbetween angle is calculated using linear approximation
+        radiationProfile :  # relative, in range 0 -> 1
         - 1
         - 0.97
         - 0.9

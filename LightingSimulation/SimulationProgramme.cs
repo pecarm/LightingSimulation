@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata;
-using YamlDotNet.Serialization.NamingConventions;
+﻿using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
 
 class SimulationProgramme

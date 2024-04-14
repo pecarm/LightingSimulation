@@ -251,8 +251,8 @@ class Simulation
         }
 
         string log = dateTime + irradiance + lightSourceInfo;
-        string path = "C:\\Users\\Martin\\Desktop\\docs\\DIPLOMKA\\SIM RESULTS";
-        string fileName = path + "\\log-" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".txt";
+        // string path = "C:\\Users\\Martin\\Desktop\\docs\\DIPLOMKA\\SIM RESULTS";
+        string fileName = /*path + "\\" +*/"log-" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".txt";
 
         using (StreamWriter sw = new StreamWriter(fileName))
         {

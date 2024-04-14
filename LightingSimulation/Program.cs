@@ -26,7 +26,7 @@ void RunApp()
 
     string path = GetPathToYamlFile();
 
-    SimulationProgramme programme = SimulationProgramme.ReadFromYamlFile("simulation_config.yml");
+    SimulationProgramme programme = SimulationProgramme.ReadFromYamlFile(path);
 
     StartSimulationProgramme(programme);
 
