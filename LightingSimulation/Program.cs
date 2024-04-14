@@ -28,7 +28,7 @@ void RunApp()
 
     SimulationProgramme programme = SimulationProgramme.ReadFromYamlFile("simulation_config.yml");
 
-    programme.RunProgrammePreview(20);
+    StartSimulationProgramme(programme);
 
     /*
     Led led = new Led(INTENSITY, PROFILE, MODEL);
@@ -111,6 +111,7 @@ void StartSimulationProgramme(SimulationProgramme programme)
                 break;
             default:
                 validInput = false;
+                Console.WriteLine("Invalid input, please select 1 or 2 as an option.");
                 break;
         }
     } while (!validInput);
@@ -137,6 +138,6 @@ int GetClusterSize()
 
     } while (!isValidInput);
 
-    return 0;
+    return number;
 }
 #endregion
