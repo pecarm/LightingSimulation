@@ -48,9 +48,10 @@ class Simulation
         double y0 = pixel.GetYcoord() - halfPixelSize;
         double y1 = pixel.GetYcoord() + halfPixelSize;
 
-        double illumination = CalculateAreaIllumination(x0, x1, y0, y1);
+        double[] results = CalculateAreaIllumination(x0, x1, y0, y1);
 
-        pixel.SetIllumination(illumination);
+        pixel.SetIllumination(results[0]);
+        pixel.SetAverageAngleOfIncidence(results[1]);
     }
     #endregion
 
@@ -93,30 +94,42 @@ class Simulation
         double y1 = plane.GetPixels()[(y * clusterSize + clusterSize - 1)* xDim].GetYcoord() + halfPixelSize;
 
         // calculate illumination of cluster
-        double illumination = CalculateAreaIllumination(x0, x1, y0, y1);
+        double[] results = CalculateAreaIllumination(x0, x1, y0, y1);
 
         // add contribution to each pixel of cluster
         for (int yDelta = 0; yDelta < clusterSize; yDelta++)
         {
             for (int xDelta = 0; xDelta < clusterSize; xDelta++)
             {
-                plane.GetPixels()[(x * clusterSize + xDelta) + (y * clusterSize + yDelta) * xDim].SetIllumination(illumination / (clusterSize * clusterSize));
+                plane.GetPixels()[(x * clusterSize + xDelta) + (y * clusterSize + yDelta) * xDim].SetIllumination(results[0] / (clusterSize * clusterSize));
+                plane.GetPixels()[(x * clusterSize + xDelta) + (y * clusterSize + yDelta) * xDim].SetAverageAngleOfIncidence(results[1]);
             }
         }
     }
     #endregion
 
     #region Universal methods for calculating illumination
-    double CalculateAreaIllumination(double x0, double x1, double y0, double y1) // calculates how much light falls onto a rectangular area (pixel, cluster)
+    double[] CalculateAreaIllumination(double x0, double x1, double y0, double y1) // calculates how much light falls onto a rectangular area (pixel, cluster)
     {
+        List<double[]> pixelVectors = new List<double[]>();
+
         double illumination = 0;
 
         foreach (Led led in lightSource.GetLights()) // iterates through LEDs in lightsource
         {
-            illumination += CalculateLedContribution(CalculateSolidAngle(x0, x1, y0, y1, led), CalculateAngle((x0 + x1) / 2, (y0 + y1) / 2, led), led);
+            double[] pixelVector = CalculatePixelVector(led, (x0 + x1) / 2, (y0 + y1) / 2);
+
+            illumination += CalculateLedContribution(CalculateSolidAngle(x0, x1, y0, y1, led), CalculateAngle(pixelVector, led.GetNormalVector()), led);
+
+            for (int i = 0; i < 3; i++)
+            {
+                pixelVector[i] *= illumination; // creates a vector, whose length is proportional to the light contribution from that direction
+            }
+
+            pixelVectors.Add(pixelVector);
         }
 
-        return illumination;
+        return [illumination, CalculateAverageAngle(pixelVectors)];
     }
 
     double CalculateLedContribution(double solidAngle, double angle, Led led) // calculates light contribution by a single LED, adjusts for angle and solid angle
@@ -126,14 +139,32 @@ class Simulation
         return contribution;
     }
 
-    double CalculateAngle(double x, double y, Led led) // Calculates angle between vector normal and vector LED -> point on a Plane
+    double CalculateAngle(double[] pixelVector, double[] ledVector) // Calculates angle between vector normal and vector LED -> point on a Plane
     {
         // LED normal vector is calculated when a light source is created
-        double[] pixelVector = CalculatePixelVector(led, x, y); // vector LED -> pixel
-
-        double angle = Math.Acos(VectorDotProduct(led.GetNormalVector(), pixelVector) / (VectorMagnitude(led.GetNormalVector()) * VectorMagnitude(pixelVector)));
+        double angle = Math.Acos(VectorDotProduct(ledVector, pixelVector) / (VectorMagnitude(ledVector) * VectorMagnitude(pixelVector)));
 
         return angle;
+    }
+
+    double CalculateAverageAngle(List<double[]> pixelVectors)
+    {
+        // Calculate average vector, this way is best because it accounts for 
+        double[] vectorSum = new double[3];
+        foreach (double[] pixelVector in pixelVectors)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                vectorSum[i] += pixelVector[i];  
+            }
+        }
+
+        for (int i = 0; i < 3; i++)
+        {
+            vectorSum[i] /= pixelVectors.Count;
+        }
+
+        return Math.Asin(vectorSum[2] / VectorMagnitude(vectorSum)) * (180 / Math.PI); // RESULT IN DEGREES
     }
 
     double AdjustedIntensity(Led led, double angle) // adjusts intensity of light from LED based on angle
@@ -193,9 +224,15 @@ class Simulation
         return tetrahedronA + tetrahedronB;
     }
 
-    double[] CalculatePixelVector(Led led, double x, double y) // Calculates vector between LED and a point on a Plane
+    double[] CalculatePixelVector(Led led, double x, double y) // Calculates a NORMALIZED vector between LED and a point on a Plane
     {
-        return new double[] { x - led.GetXcoord(), y - led.GetYcoord(), plane.GetDistance() };
+        double i = x - led.GetXcoord();
+        double j = y - led.GetYcoord();
+        double k = plane.GetDistance();
+
+        double magnitude = VectorMagnitude([i, j, k]);
+
+        return [i / magnitude, j / magnitude, k / magnitude];
     }
     #endregion
 
@@ -214,22 +251,33 @@ class Simulation
     {
         return new double[] { a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0] };
     }
+
+    double[] VectorAverage()
+    {
+        double[] average = new double[3];
+
+        return average;
+    }
     #endregion
 
     public void GenerateLog()
     {
-        string dateTime = DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + "\n";
+        string dateTime = DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss");
 
         double totalPower = 0;
+        double worstAngleOfIncidence = 90;
         foreach(Pixel pixel in plane.GetPixels())
         {
             totalPower += pixel.GetIllumination();
+            if (pixel.GetAverageAngleOfIncidence() < worstAngleOfIncidence)
+            {
+                worstAngleOfIncidence = pixel.GetAverageAngleOfIncidence();
+            }
         }
 
-        string irradiance = "Average irradiance of image: " + totalPower / (plane.GetXdim() * plane.GetYdim() * Math.Pow(plane.GetPixelSize(), 2)) + " W/m2\n\n";
+        string irradiance = "Average irradiance of image: " + totalPower / (plane.GetXdim() * plane.GetYdim() * Math.Pow(plane.GetPixelSize(), 2)) + " W/m2\n";
+        string worstAngle = "Worst angle of incidence: " + worstAngleOfIncidence + "°\n\n";
 
-
-        //
         Dictionary<string, string> ledProperties = new Dictionary<string, string>();
 
         foreach (RingLight ringLight in lightSource.GetRingLights())
@@ -250,9 +298,9 @@ class Simulation
             lightSourceInfo += ledInfo;
         }
 
-        string log = dateTime + irradiance + lightSourceInfo;
+        string log = dateTime + "\n" + irradiance + worstAngle + lightSourceInfo;
         // string path = "C:\\Users\\Martin\\Desktop\\docs\\DIPLOMKA\\SIM RESULTS";
-        string fileName = /*path + "\\" +*/"log-" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".txt";
+        string fileName = /*path + "\\" +*/"log-" + dateTime + ".txt";
 
         using (StreamWriter sw = new StreamWriter(fileName))
         {

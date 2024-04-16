@@ -62,8 +62,9 @@ class Plane
         // for normalizing pixel values 
         double minIntensity = 1000;
         double maxIntensity = 0;
+        double maxAngle = 0;
 
-        foreach (Pixel pixel in pixels) // finds maximum and minimum intensity in one pass of all pixels
+        foreach (Pixel pixel in pixels) // finds maximum and minimum intensity and angle in one pass of all pixels
         {
             if (pixel.GetIllumination() > maxIntensity)
             {
@@ -74,34 +75,42 @@ class Plane
             {
                 minIntensity = pixel.GetIllumination();
             }
+
+            if (pixel.GetAverageAngleOfIncidence() > maxAngle)
+            {
+                maxAngle = pixel.GetAverageAngleOfIncidence();
+            }
         }
 
         maxIntensity = maxIntensity / pixelArea; // W/m2
         minIntensity  = minIntensity / pixelArea; // W/m2
 
-        double delta = maxIntensity - minIntensity;
+        double intensityDelta = maxIntensity - minIntensity;
 
-        Bitmap bmp = new Bitmap(xDim, yDim);
+        Bitmap bmpIntensity = new Bitmap(xDim, yDim);
+        Bitmap bmpAngles = new Bitmap(xDim, yDim);
 
         for (int i = 0; i < pixels.Length; i++)
         {
             int x = i % xDim; // x coord in bmp can be calculated as i mod width in pixels
             int y = i / xDim; // c# int division automatically floors
 
-            int brightness = (int) Math.Round(((pixels[i].GetIllumination() / pixelArea - minIntensity) / delta) * 255);
-            /*
-            int brightness = (int)Math.Round(((pixels[i].GetIllumination() / pixelArea) / maxIntensity) * 255);
-            Alternative for actual brightness, not just relative. Might show better comparison results...
-            */
-            Color color = Color.FromArgb(brightness, brightness, brightness);
+            int brightness = (int)Math.Round(((pixels[i].GetIllumination() / pixelArea - minIntensity) / intensityDelta) * 255);
+            int angle = (int)Math.Round((pixels[i].GetAverageAngleOfIncidence() / maxAngle) * 255);
 
-            bmp.SetPixel(x, y, color);
+            Color colorIntensity = Color.FromArgb(brightness, brightness, brightness);
+            Color colorAngle = Color.FromArgb(angle, angle, angle);
+
+            bmpIntensity.SetPixel(x, y, colorIntensity);
+            bmpAngles.SetPixel(x, y, colorAngle);
         }
 
         // string path = "C:\\Users\\Martin\\Desktop\\docs\\DIPLOMKA\\SIM RESULTS";
-        string fileName = /*path + "\\" + */ DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".bmp";
+        string fileNameIntensity = /*path + "\\" + */ "irradiance-" +  DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".bmp";
+        string fileNameAngle = /*path + "\\" + */ "angle_of_incidence-" +  DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".bmp";
 
-        bmp.Save(fileName, System.Drawing.Imaging.ImageFormat.Bmp);
+        bmpIntensity.Save(fileNameIntensity, System.Drawing.Imaging.ImageFormat.Bmp);
+        bmpAngles.Save(fileNameAngle, System.Drawing.Imaging.ImageFormat.Bmp);
     }
 
     #region Getters, setters

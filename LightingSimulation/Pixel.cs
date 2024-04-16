@@ -1,8 +1,9 @@
 ﻿class Pixel
 {
-    double xCoord;       // Real coords in space
+    double xCoord;       // Real coords in space meters
     double yCoord;
-    double illumination; // Amount of light falling on this pixel
+    double illumination; // Amount of light falling on this pixel watts
+    double averageAngleOfIncidence; // DEGREES!!!
 
     #region Getters, setters
     public double GetIllumination() // for exporting as BMP
@@ -33,6 +34,16 @@
     public void SetYcoord(double yCoord)
     {
         this.yCoord = yCoord;
+    }
+
+    public double GetAverageAngleOfIncidence()
+    {
+        return this.averageAngleOfIncidence;
+    }
+
+    public void SetAverageAngleOfIncidence(double averageAngleOfIncidence)
+    {
+        this.averageAngleOfIncidence = averageAngleOfIncidence;
     }
     #endregion
 }
