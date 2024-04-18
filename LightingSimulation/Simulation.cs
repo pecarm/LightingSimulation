@@ -149,7 +149,8 @@ class Simulation
 
     double CalculateAverageAngle(List<double[]> pixelVectors)
     {
-        // Calculate average vector, this way is best because it accounts for 
+        // Calculate sum of vectors, this way is best because it accounts for provided amount of light from each direction
+        // doesn't need to be averaged, because the angle of vector a is the same as the vector 10*a
         double[] vectorSum = new double[3];
         foreach (double[] pixelVector in pixelVectors)
         {
@@ -157,11 +158,6 @@ class Simulation
             {
                 vectorSum[i] += pixelVector[i];  
             }
-        }
-
-        for (int i = 0; i < 3; i++)
-        {
-            vectorSum[i] /= pixelVectors.Count;
         }
 
         return Math.Asin(vectorSum[2] / VectorMagnitude(vectorSum)) * (180 / Math.PI); // RESULT IN DEGREES

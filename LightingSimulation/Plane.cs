@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using SkiaSharp;
 
 class Plane
 {
@@ -62,7 +63,7 @@ class Plane
         // for normalizing pixel values 
         double minIntensity = 1000;
         double maxIntensity = 0;
-        double maxAngle = 0;
+        double worstAngle = 90;
 
         foreach (Pixel pixel in pixels) // finds maximum and minimum intensity and angle in one pass of all pixels
         {
@@ -76,9 +77,9 @@ class Plane
                 minIntensity = pixel.GetIllumination();
             }
 
-            if (pixel.GetAverageAngleOfIncidence() > maxAngle)
+            if (pixel.GetAverageAngleOfIncidence() < worstAngle)
             {
-                maxAngle = pixel.GetAverageAngleOfIncidence();
+                worstAngle = pixel.GetAverageAngleOfIncidence();
             }
         }
 
@@ -87,30 +88,45 @@ class Plane
 
         double intensityDelta = maxIntensity - minIntensity;
 
-        Bitmap bmpIntensity = new Bitmap(xDim, yDim);
-        Bitmap bmpAngles = new Bitmap(xDim, yDim);
+        SKBitmap bmpIntensity = new SKBitmap(xDim, yDim);
+        SKBitmap bmpAngles = new SKBitmap(xDim, yDim);
 
         for (int i = 0; i < pixels.Length; i++)
         {
             int x = i % xDim; // x coord in bmp can be calculated as i mod width in pixels
             int y = i / xDim; // c# int division automatically floors
 
-            int brightness = (int)Math.Round(((pixels[i].GetIllumination() / pixelArea - minIntensity) / intensityDelta) * 255);
-            int angle = (int)Math.Round((pixels[i].GetAverageAngleOfIncidence() / maxAngle) * 255);
+            byte brightness = (byte)Math.Round(((pixels[i].GetIllumination() / pixelArea - minIntensity) / intensityDelta) * 255);
+            byte angle = (byte)Math.Round(((pixels[i].GetAverageAngleOfIncidence() - worstAngle) / (90 - worstAngle)) * 255);
 
-            Color colorIntensity = Color.FromArgb(brightness, brightness, brightness);
-            Color colorAngle = Color.FromArgb(angle, angle, angle);
+            SKColor colorIntensity = new SKColor(brightness, brightness, brightness);
+            SKColor colorAngle = new SKColor(angle, angle, angle);
 
             bmpIntensity.SetPixel(x, y, colorIntensity);
             bmpAngles.SetPixel(x, y, colorAngle);
         }
 
-        // string path = "C:\\Users\\Martin\\Desktop\\docs\\DIPLOMKA\\SIM RESULTS";
-        string fileNameIntensity = /*path + "\\" + */ "irradiance-" +  DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".bmp";
-        string fileNameAngle = /*path + "\\" + */ "angle_of_incidence-" +  DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".bmp";
+        // string path = "C:\\Users\\Martin\\Desktop\\docs\\DIPLOMKA\\SIM RESULTS\\";
 
-        bmpIntensity.Save(fileNameIntensity, System.Drawing.Imaging.ImageFormat.Bmp);
-        bmpAngles.Save(fileNameAngle, System.Drawing.Imaging.ImageFormat.Bmp);
+        string fileNameIntensity = /*path + */ "irradiance-" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".png";
+        string fileNameAngle = /*path + */ "angle_of_incidence-" + DateTime.Now.ToString("dd-MM-yyyy HH-mm-ss") + ".png";
+
+        SaveBitmap(bmpIntensity, fileNameIntensity);
+        SaveBitmap(bmpAngles, fileNameAngle);
+    }
+
+    void SaveBitmap(SKBitmap bitmap, string path)
+    {
+        SKData imageData = bitmap.Encode(SKEncodedImageFormat.Png, 100);
+        
+        // Check if encoding was successful
+        if (imageData.IsEmpty)
+        {
+            throw new Exception("Failed to encode image data.");
+        }
+
+        FileStream fileStream = File.OpenWrite(path);
+        imageData.SaveTo(fileStream);
     }
 
     #region Getters, setters

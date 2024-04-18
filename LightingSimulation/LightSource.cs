@@ -1,4 +1,6 @@
-﻿class LightSource
+﻿using System.Xml;
+
+class LightSource
 {
     public List<RingLight> ringLights { get; set; }    // for creating report and calculating geometry
     Led[] lights;                               // for easy foreaching of LED contributions
@@ -197,7 +199,7 @@
 
         for (int i = 1; i <= ringLight.GetLights().Length; i++) // Assign each LED from one ring
         {
-            int positionDelta = (int)Math.Round(i * stride) - (int)Math.Round((i - 1) * stride);
+            int positionDelta = RoundDouble(i * stride) - RoundDouble((i - 1) * stride);    // Math.Round rounds to closest EVEN number, had to write own rounding func
 
             while (positionDelta > 0)
             {
@@ -219,6 +221,21 @@
                 cursor++;
             }
         }
+    }
+
+    int RoundDouble(double value)
+    {
+        int i = 0;
+
+        if ((value - (double)Math.Floor(value)) < 0.5)
+        {
+            i = (int)Math.Floor(value);
+        }
+        else
+        {
+            i = (int)Math.Ceiling(value);
+        }
+        return i;
     }
 
     Dictionary<int, Led> InitializePositionsDictionary(int numberOfPositions)

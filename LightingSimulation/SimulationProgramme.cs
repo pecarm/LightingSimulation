@@ -15,30 +15,20 @@ class SimulationProgramme
         this.configurations = configurations;
     }
 
-    public void Init()
+    public void RunProgramme()
     {
         foreach (Simulation simulation in configurations)
         {
             simulation.Init();
-        }
-    }
-
-    public void RunProgramme()
-    {
-        Init();
-
-        foreach (Simulation simulation in configurations)
-        {
             simulation.CalculateIllumination();
         }
     }
 
     public void RunProgrammePreview(int clusterSize)
     {
-        Init();
-
         foreach(Simulation simulation in configurations)
         {
+            simulation.Init();
             simulation.CalculateIlluminationPreview(clusterSize);
         }
     }

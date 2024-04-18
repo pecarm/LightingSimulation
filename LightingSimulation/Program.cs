@@ -81,7 +81,7 @@ string GetPathToYamlFile()
         }
         else if (!File.Exists(filePath) || !(filePath.Contains(".yaml") || filePath.Contains(".yml")))
         {
-            Console.WriteLine("Invalid file path. Please enter a valid path to a configuration '.yaml' / '.yml' file:");
+            Console.WriteLine("Invalid file path. Please enter a valid path to a configuration '.yaml' / '.yml' file or delete quotes (\")from the path:");
         }
 
     } while (!File.Exists(filePath));
