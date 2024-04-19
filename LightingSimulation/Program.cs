@@ -103,7 +103,7 @@ void StartSimulationProgramme(SimulationProgramme programme)
         {
             case "1":
                 validInput = true;
-                programme.RunProgramme(); 
+                programme.RunProgramme();
                 break;
             case "2":
                 validInput = true;
