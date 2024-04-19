@@ -28,6 +28,7 @@ Last file is a log file containing basic data about the results along with a des
 ## Configuration YAML file
 When creating the simulator, the goal was to make it so that the user will be able to provide multiple `configurations` and set it running in order to later compare the results.
 This is the reason why a configuration file was chosen. The file is read using [YamlDotNet](https://github.com/aaubry/YamlDotNet) and thus supported YAML versions are the same as in this library (if I remember to update it...).
+When creating this file, please refer to the `simulation_config.yml` sample configuration file. In case something breaks, make sure to keep a copy of it on your system.
 
 ### Plane
 The `plane` describes the illuminated plane that is observed by a camera. This plane is defined by its resolution using fields `xDim` and `yDim`.
