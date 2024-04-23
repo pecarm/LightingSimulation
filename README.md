@@ -11,7 +11,7 @@ The contents of the configuration file are described later on together with the 
 ## Getting Started
 When you clone this repository you should have everything you need to compile and run it yourself, all libraries are included.
 
-Build your project using the .NET CLI by typing this command:
+Build your project using the .NET CLI by navigating to the project directory and typing this command:
    ```sh
    dotnet build LightingSimulation.csproj
    ```
