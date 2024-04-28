@@ -15,6 +15,7 @@ Build your project using the .NET CLI by navigating to the project directory and
    ```sh
    dotnet build LightingSimulation.csproj
    ```
+or by importing this project to Visual Studio and running it.
 
 Then modify the configuration file based on your desired configuration and after running the simulator, when prompted, provide a path to the file.
 You will then be asked whether or not you wish to simulate in full or just partial resolution. This has a notable effect on performance.
