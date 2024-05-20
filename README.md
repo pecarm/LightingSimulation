@@ -1,6 +1,6 @@
 <!-- ABOUT THE PROJECT -->
 # LightingSimulation
-LightingSimulation is a C# programme, which calculates the irradiance and the angle of incidence of a plane placed in a certain distance.
+LightingSimulation is a C# programme, which calculates the irradiance and the angle of incidence of a plane placed in a certain distance from a light source.
 These results are then exported as PNG files. The input for the simulator is a YAML configuration file, which is included in the project files.
 You can configure the resolution and FOV of the camera/plane as well as its distance together with the properties of the light source.
 The light source is composed of multiple ring shaped light sources, each defined by its radius, number of LEDs, their tilt and type.
