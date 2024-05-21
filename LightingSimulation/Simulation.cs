@@ -289,7 +289,7 @@ class Simulation : IDisposable
         string irradiance = "Average irradiance of image: " + avIrradiance + " W/m2\n";
         string standardDeviation = "Standard deviation: " + sDev + " W/m2\n";
         string cv = "Coefficient of variation: " + 100 * sDev / avIrradiance + " %\n";
-        string worstAngle = "Worst angle of incidence: " + worstAngleOfIncidence + "°\n\n";
+        string worstAngle = "Worst angle of incidence: " + (90 - worstAngleOfIncidence) + "°\n\n";
 
         Dictionary<string, string> ledProperties = new Dictionary<string, string>();
 
