@@ -95,19 +95,29 @@ void StartSimulationProgramme(SimulationProgramme programme)
     do
     {
         Console.WriteLine("Do you wish to:\n" +
-            "1 - Simulate in full resolution, or\n" +
-            "2 - Simulate in lower resolution (specify later)");
+            "1 - Simulate in full resolution WITH graphics, or\n" +
+            "2 - Simulate in full resolution WITHOUT graphics, or\n" +
+            "3 - Simulate in lower resolution (specify later) WITH graphics, or\n" +
+            "4 - Simulate in lower resolution (specify later) WITHOUT graphics?");
         string choice = Console.ReadLine();
 
         switch (choice)
         {
             case "1":
                 validInput = true;
-                programme.RunProgramme();
+                programme.RunProgramme(true);
                 break;
             case "2":
                 validInput = true;
-                programme.RunProgrammePreview(GetClusterSize());
+                programme.RunProgramme(false);
+                break;
+            case "3":
+                validInput = true;
+                programme.RunProgrammePreview(GetClusterSize(programme), true);
+                break;
+            case "4":
+                validInput = true;
+                programme.RunProgrammePreview(GetClusterSize(programme), false);
                 break;
             default:
                 validInput = false;
@@ -117,10 +127,10 @@ void StartSimulationProgramme(SimulationProgramme programme)
     } while (!validInput);
 }
 
-int GetClusterSize()
+int GetClusterSize(SimulationProgramme programme)
 {
-    int number;
-    bool isValidInput = false;
+    int number = 1;
+    bool isValidInput, isValidDivider;
 
     do
     {
@@ -130,14 +140,34 @@ int GetClusterSize()
 
         // TryParse to handle non-numeric input
         isValidInput = int.TryParse(input, out number);
+        isValidDivider = IsValidDivider(programme, number);
 
         if (!isValidInput)
         {
             Console.WriteLine("Invalid input. Please enter an integer:");
         }
+        else if (!isValidDivider)
+        {
+            Console.WriteLine("One or more of resolutions does not support this cluster size. Please re-enter:");
+        }
 
-    } while (!isValidInput);
+    } while (!isValidInput || !isValidDivider);
 
     return number;
+}
+
+bool IsValidDivider(SimulationProgramme programme, int divider)
+{
+    foreach(Simulation simulation in programme.configurations)
+    {
+        Plane plane = simulation.plane;
+
+        if ((plane.GetXdim() % divider != 0) || (plane.GetYdim() % divider != 0))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 #endregion

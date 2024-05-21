@@ -51,7 +51,7 @@ class LightSource
 
     bool CheckRadiusInterference(double[] radii)
     {
-        // checks if any of the RingLights have similar diameters to determine,
+        // checks if any of the RingLights have similar radii to determine,
         // if the positions should be calculated on a single ring or on multiple.
         // Multiple rings don't need to consider the ratios between amounts of LEDs,
         // but they should still be offset so there aren't two LEDs next to each other
@@ -172,7 +172,7 @@ class LightSource
         group.Sort((x, y) => y.GetLights().Length.CompareTo(x.GetLights().Length)); // sorts RingLights descending based on number of LEDs
 
         // TESTED:
-        // Ascending order: creates groups, ex.: 2, 1, 1 isn't distributed as abac, but as aabc, also spacing is not repeated
+        // Ascending order: creates groups, ex.: 2, 1, 1 isn't distributed as caba, but as aabc, also spacing is not repeated
         // Randomized: last one is always grouped up with inconsistent spacing
         // Descending: doesn't create groups
 
@@ -181,8 +181,8 @@ class LightSource
         // Dictionary serves as a buffer to check which positions are already full
         // can be done with list, which would make AssignRingLightLeds easier,
         // but after each assignment it would have to be trimmed in order to work, checking for null might be easier for computing
-        Dictionary<int, Led> ledPositions = InitializePositionsDictionary(numberOfPositions);   // Key - index of a position on the ring, initialized in this method
-                                                                                                // Value - LED in that position
+        Dictionary<int, bool> ledPositions = InitializePositionsDictionary(numberOfPositions);  // Key - index of a position on the ring, initialized in this method
+                                                                                                // Value - is there LED in that position?
 
         foreach (RingLight ringLight in group)
         {
@@ -191,7 +191,7 @@ class LightSource
         }
     }
 
-    void AssignRingLightLeds(RingLight ringLight, int numberOfPositions, Dictionary<int, Led> ledPositions)
+    void AssignRingLightLeds(RingLight ringLight, int numberOfPositions, Dictionary<int, bool> ledPositions)
     {
         double stride = numberOfPositions / (double)ringLight.GetLights().Length;
 
@@ -203,7 +203,7 @@ class LightSource
 
             while (positionDelta > 0)
             {
-                if (ledPositions[cursor] != null)
+                if (ledPositions[cursor] == true)
                 {
                     cursor++;
                     continue;
@@ -215,7 +215,7 @@ class LightSource
                 {
                     // Calculate LED geometry for i-1 th LED in ringLight and assign this LED to the Dictionary
                     CalculateLedGeometry(ringLight.GetLights()[i - 1], ringLight.GetRadius(), ringLight.GetTilt(), 2 * Math.PI * ((double)(cursor - 1) / ledPositions.Count));
-                    ledPositions[cursor] = ringLight.GetLights()[i - 1];
+                    ledPositions[cursor] = true;
                 }
 
                 cursor++;
@@ -238,13 +238,13 @@ class LightSource
         return i;
     }
 
-    Dictionary<int, Led> InitializePositionsDictionary(int numberOfPositions)
+    Dictionary<int, bool> InitializePositionsDictionary(int numberOfPositions)
     {
-        Dictionary<int, Led> ledPositions = new Dictionary<int, Led>();
+        Dictionary<int, bool> ledPositions = new Dictionary<int, bool>();
 
         for (int i = 1; i <= numberOfPositions; i++)
         {
-            ledPositions.Add(i, null);
+            ledPositions.Add(i, false);
         }
 
         return ledPositions;

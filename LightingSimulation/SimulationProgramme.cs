@@ -15,21 +15,27 @@ class SimulationProgramme
         this.configurations = configurations;
     }
 
-    public void RunProgramme()
+    public void RunProgramme(bool includeGraphics)
     {
         foreach (Simulation simulation in configurations)
         {
-            simulation.Init();
-            simulation.CalculateIllumination();
+            using (simulation)
+            {
+                simulation.Init();
+                simulation.CalculateIllumination(includeGraphics);
+            }
         }
     }
 
-    public void RunProgrammePreview(int clusterSize)
+    public void RunProgrammePreview(int clusterSize, bool includeGraphics)
     {
         foreach(Simulation simulation in configurations)
         {
-            simulation.Init();
-            simulation.CalculateIlluminationPreview(clusterSize);
+            using (simulation)
+            {
+                simulation.Init();
+                simulation.CalculateIlluminationPreview(clusterSize, includeGraphics);
+            }
         }
     }
     
@@ -57,5 +63,5 @@ class SimulationProgramme
 
         return programme;
     }
-    
+
 }

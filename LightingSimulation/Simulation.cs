@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-class Simulation
+class Simulation : IDisposable
 {
     public Plane plane { get; set; }
     public LightSource lightSource { get; set; }
@@ -23,7 +23,7 @@ class Simulation
     }
 
     #region Full res calculation
-    public void CalculateIllumination()
+    public void CalculateIllumination(bool includeGraphics)
     {
         Stopwatch sw = new Stopwatch();
         sw.Start();
@@ -35,7 +35,10 @@ class Simulation
         sw.Stop();
         Console.WriteLine("Elapsed: " + sw.Elapsed);
 
-        plane.ExportAsBitmap();
+        if (includeGraphics)
+        {
+            plane.ExportAsBitmap();
+        }
         GenerateLog();
     }
 
@@ -56,14 +59,8 @@ class Simulation
     #endregion
 
     #region Preview calculation
-    public void CalculateIlluminationPreview(int clusterSize) // calculates clusters of pixels, giving smaller resolution, but way faster compute times
+    public void CalculateIlluminationPreview(int clusterSize, bool includeGraphics) // calculates clusters of pixels, giving smaller resolution, but way faster compute times
     {
-        if ((plane.GetXdim() % clusterSize != 0) || (plane.GetYdim() % clusterSize != 0))
-        {
-            Console.WriteLine("ERROR: Cluster size incompatible with camera resolution");
-            return;
-        }
-
         Stopwatch sw = new Stopwatch();
         sw.Start();
         Console.WriteLine("Calculating Illumination preview...");
@@ -77,7 +74,10 @@ class Simulation
         sw.Stop();
         Console.WriteLine("Elapsed: " + sw.Elapsed);
 
-        plane.ExportAsBitmap();
+        if (includeGraphics)
+        {
+            plane.ExportAsBitmap();
+        }
         GenerateLog();
     }
 
@@ -119,11 +119,13 @@ class Simulation
         {
             double[] pixelVector = CalculatePixelVector(led, (x0 + x1) / 2, (y0 + y1) / 2);
 
-            illumination += CalculateLedContribution(CalculateSolidAngle(x0, x1, y0, y1, led), CalculateAngle(pixelVector, led.GetNormalVector()), led);
+            double contribution = CalculateLedContribution(CalculateSolidAngle(x0, x1, y0, y1, led), CalculateAngle(pixelVector, led.GetNormalVector()), led);
+
+            illumination += contribution;
 
             for (int i = 0; i < 3; i++)
             {
-                pixelVector[i] *= illumination; // creates a vector, whose length is proportional to the light contribution from that direction
+                pixelVector[i] *= contribution; // creates a vector, whose length is proportional to the light contribution from that direction
             }
 
             pixelVectors.Add(pixelVector);
@@ -271,7 +273,21 @@ class Simulation
             }
         }
 
-        string irradiance = "Average irradiance of image: " + totalPower / (plane.GetXdim() * plane.GetYdim() * Math.Pow(plane.GetPixelSize(), 2)) + " W/m2\n";
+        double pixelArea = Math.Pow(plane.GetPixelSize(), 2);
+        double totalArea = plane.GetXdim() * plane.GetYdim() * pixelArea;
+        double avIrradiance = totalPower / totalArea;
+
+        
+        double sDevSubtotal = 0;
+        foreach (Pixel pixel in plane.GetPixels())
+        {
+            sDevSubtotal += Math.Pow(pixel.GetIllumination() / pixelArea - avIrradiance, 2);
+        }
+        double sDev = Math.Sqrt(sDevSubtotal / (plane.GetXdim() * plane.GetYdim()));
+
+        string irradiance = "Average irradiance of image: " + avIrradiance + " W/m2\n";
+        string standardDeviation = "Standard deviation: " + sDev + " W/m2\n";
+        string cv = "Coefficient of variation: " + 100 * sDev / avIrradiance + " %\n";
         string worstAngle = "Worst angle of incidence: " + worstAngleOfIncidence + "°\n\n";
 
         Dictionary<string, string> ledProperties = new Dictionary<string, string>();
@@ -279,7 +295,7 @@ class Simulation
         foreach (RingLight ringLight in lightSource.GetRingLights())
         {
             string model = ringLight.GetLights()[0].GetModel();
-            string properties = "Intensity: " + ringLight.GetLights()[0].GetIntensity() + " W/m2\n"
+            string properties = "Radiant intensity: " + ringLight.GetLights()[0].GetIntensity() + " W/sr\n"
                 + "Tilt: " + ringLight.GetTilt() * (180 / Math.PI) + "°\n"
                 + "Radius: " + ringLight.GetRadius() + "\n"
                 + "Number of LEDs: " + ringLight.GetLights().Length;
@@ -294,7 +310,7 @@ class Simulation
             lightSourceInfo += ledInfo;
         }
 
-        string log = dateTime + "\n" + irradiance + worstAngle + lightSourceInfo;
+        string log = dateTime + "\n" + irradiance + standardDeviation + cv + worstAngle + lightSourceInfo;
         // string path = "C:\\Users\\Martin\\Desktop\\docs\\DIPLOMKA\\SIM RESULTS";
         string fileName = /*path + "\\" +*/"log-" + dateTime + ".txt";
 
@@ -302,5 +318,11 @@ class Simulation
         {
             sw.WriteLine(log);
         }
+    }
+
+    public void Dispose()
+    {
+        plane = null;
+        lightSource = null;
     }
 }
