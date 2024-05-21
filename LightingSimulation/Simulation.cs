@@ -285,6 +285,7 @@ class Simulation : IDisposable
         }
         double sDev = Math.Sqrt(sDevSubtotal / (plane.GetXdim() * plane.GetYdim()));
 
+        string distance = "Distance of simulated plane from light source: " + plane.GetDistance() * 100 + " cm\n";
         string irradiance = "Average irradiance of image: " + avIrradiance + " W/m2\n";
         string standardDeviation = "Standard deviation: " + sDev + " W/m2\n";
         string cv = "Coefficient of variation: " + 100 * sDev / avIrradiance + " %\n";
@@ -310,7 +311,7 @@ class Simulation : IDisposable
             lightSourceInfo += ledInfo;
         }
 
-        string log = dateTime + "\n" + irradiance + standardDeviation + cv + worstAngle + lightSourceInfo;
+        string log = dateTime + "\n" + distance + irradiance + standardDeviation + cv + worstAngle + lightSourceInfo;
         // string path = "C:\\Users\\Martin\\Desktop\\docs\\DIPLOMKA\\SIM RESULTS";
         string fileName = /*path + "\\" +*/"log-" + dateTime + ".txt";
 
